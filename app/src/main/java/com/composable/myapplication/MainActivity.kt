@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.composable.myapplication.ui.theme.MiPrimerComposableTheme
 import com.composable.myapplication.ui.theme.boxs.boxces
+import com.composable.myapplication.ui.theme.completado
 import com.composable.myapplication.ui.theme.constrain_layout.constraint
 import com.composable.myapplication.ui.theme.constrain_layout.tarea
 
@@ -23,7 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MiPrimerComposableTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    tarea(Modifier.padding())
+                    completado(Modifier.padding(innerPadding))
                 }
             }
         }
