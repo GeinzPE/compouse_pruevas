@@ -49,7 +49,7 @@ fun ConstraintLayout(
 
 @Composable
 fun formulario_completo_con_constrain(modifier: Modifier) {
-    com.compous.compouse.componentes.ConstraintLayout(modifier.fillMaxSize()) {
+    ConstraintLayout(modifier.fillMaxSize()) {
         var (com1, com2) = createRefs()
         Box(
             modifier = modifier

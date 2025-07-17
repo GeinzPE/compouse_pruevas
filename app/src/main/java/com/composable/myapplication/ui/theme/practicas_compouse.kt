@@ -2,9 +2,12 @@ package com.composable.myapplication.ui.theme
 
 import android.R
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +20,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Label
+import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,10 +44,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil3.compose.AsyncImage
 import kotlin.math.log
@@ -53,10 +75,10 @@ fun completado(modifier: Modifier) {
 
         Box(
             modifier = Modifier
-                .fillMaxHeight(0.5f)
+                .fillMaxHeight(.5f)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomEnd = 40.dp))
-                .background(Color.Blue)
+                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                .background(Color.White)
                 .constrainAs(centrado_campos) {
                     bottom.linkTo(parent.bottom)
                 }
@@ -64,14 +86,17 @@ fun completado(modifier: Modifier) {
 
         login_completo(Modifier.constrainAs(login_completo) {
             bottom.linkTo(centrado_campos.bottom)
+            top.linkTo(centrado_campos.top)
+            start.linkTo(centrado_campos.start)
+            end.linkTo(centrado_campos.end)
         })
     }
 }
 
 
-
 @Composable
 fun login_completo(modifier: Modifier) {
+    val context = LocalContext.current
     var texto_user by rememberSaveable { mutableStateOf("") }
     var contra by rememberSaveable { mutableStateOf("") }
 
@@ -102,10 +127,9 @@ fun login_completo(modifier: Modifier) {
         texto_olvidaste(
             modifier = Modifier.constrainAs(texto) {
                 top.linkTo(contra_user.bottom, margin = 8.dp)
-                start.linkTo(parent.start)
                 end.linkTo(parent.end)
             }
-        )
+        ) {  Toast.makeText(context, "Hola desde Compose!", Toast.LENGTH_SHORT).show()}
 
         // 4. Botón de login
         boton_login(
@@ -140,52 +164,119 @@ fun img_centrado(modifier: Modifier) {
             model = "https://static.vecteezy.com/system/resources/previews/018/930/698/non_2x/facebook-logo-facebook-icon-transparent-free-png.png",
             contentDescription = "imagen de inter",
             modifier = modifier
-                .size(250.dp),
+                .fillMaxWidth(1f)
+                .size(350.dp),
             onError = {
                 Log.i("image", "ocurrio un error al carga la img${it.result.throwable.message}")
             }
         )
-        Text(modifier = modifier, text = "hola como estas", textAlign = TextAlign.Center)
+        Text(
+            modifier = modifier.fillMaxWidth(1f),
+            text = "hola como estas",
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp,
+            fontFamily = FontFamily.Monospace,
+            fontStyle = FontStyle.Normal
+        )
     }
 
 }
 
 @Composable
 fun campos_user(modifier: Modifier, user: String, valor_texto: (String) -> Unit) {
-    Text(text = "Login in to you account")
-    TextField(
-        modifier = modifier.fillMaxWidth(),
-        onValueChange = { valor_texto(it) },
+    OutlinedTextField(
         value = user,
-        placeholder = { Text(text = "ingrese su usuario") })
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.White),
+        onValueChange = { valor_texto(it) },
+        placeholder = { Text(text = "ingrese su usuario", color = Color.Gray) },
+        label = { Text(text = "Ingresa tu usuario", color = Color.Black) },
+        trailingIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.star_on),
+                contentDescription = ""
+            )
+        },
+        leadingIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.star_on),
+                contentDescription = "Icono"
+            )
+        },
+    )
+}
+
+
+@Composable
+fun campos_contra(
+    modifier: Modifier,
+    user_contra: String,
+    valor_contra: (String) -> Unit
+) {
+    var contra_oculta by rememberSaveable { mutableStateOf(true) }
+
+    OutlinedTextField(
+        value = user_contra,
+        onValueChange = { valor_contra(it) },
+        modifier = modifier.fillMaxWidth(),
+        placeholder = { Text(text = "Ingresa tu contraseña") },
+        maxLines = 1,
+        isError = verificar_error(user_contra),
+        label = { Text("Ingresa tu contraseña") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+        visualTransformation = if (contra_oculta) PasswordVisualTransformation() else VisualTransformation.None,
+        trailingIcon = {
+            val icon = if (contra_oculta) R.drawable.star_on else R.drawable.star_off
+            Image(
+                painter = painterResource(id = icon),
+                contentDescription = if (contra_oculta) "Mostrar contraseña" else "Ocultar contraseña",
+                modifier = Modifier.clickable { contra_oculta = !contra_oculta }
+            )
+        },
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedPlaceholderColor = Color.Black,
+            unfocusedPlaceholderColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.Black,
+            errorTextColor = Color.Black,
+            errorLabelColor = Color.Red
+        )
+
+    )
+}
+
+private fun verificar_error(texto: String): Boolean {
+    return texto.contains("9", ignoreCase = true)
 }
 
 @Composable
-fun campos_contra(modifier: Modifier, user_contra: String, valor_contra: (String) -> Unit) {
-    TextField(
-        modifier = modifier.fillMaxWidth(),
-        onValueChange = { valor_contra(it) },
-        value = user_contra,
-        placeholder = { Text(text = "Ingresa tu contraseña") }
+fun texto_olvidaste(modifier: Modifier, onclik:  () -> Unit) {
+    Text(
+        modifier = modifier.clickable { onclik() },
+        text = "Forgot Password?",
+
+        color = Color.Blue,
+        textDecoration = TextDecoration.Underline, fontSize = 15.sp
     )
 }
 
 @Composable
-fun texto_olvidaste(modifier: Modifier) {
-    Text(modifier = modifier, text = "Forgot Password?", color = Color.Blue)
-}
-
-@Composable
 fun boton_login(modifier: Modifier) {
-    OutlinedButton(
+    ExtendedFloatingActionButton(
         modifier = modifier.fillMaxWidth(),
+        containerColor = Color.Red,
         onClick = { "pasamos los datos correctos" }) {
-        Text(text = "clikeame")
+        Text(text = "ingresar")
+        Image(painter = painterResource(id = R.drawable.star_on), contentDescription = "")
     }
 }
 
+
 @Composable
 fun texto_final(modifier: Modifier) {
-    Text(modifier = modifier, text = "Dont have an acoount? sing in")
+    Text(modifier = modifier, text = "Dont have an acoount? sing in", color = Color.Black)
 }
 
